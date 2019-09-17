@@ -1,4 +1,4 @@
-package jness.internationalization.extractor;
+package jness.internationalization.executor;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -19,9 +19,9 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
 
-import jness.internationalization.SupportExtension;
+import jness.internationalization.model.SupportExtension;
 
-public class PropertyExtractor extends KoreanExtractor {
+public class InternationalizationExecutor extends PatternManager {
 	private static Map<String, String> allProperty;
 	private static List<String> allLines;
 	private static String convertedLine;
@@ -31,10 +31,10 @@ public class PropertyExtractor extends KoreanExtractor {
 	private static boolean isWrittenInConst;
 	private static int index;
 	
-	private PropertyExtractor() {}
+	private InternationalizationExecutor() {}
 	
 	public static void init() {
-		// 프로퍼티 추출 버튼 선택 시 초기화
+		// 'Internationalization' 버튼 선택 시 초기화
 		allProperty = new HashMap<String, String>();
 		isJava = false;
 		isJS = false;
@@ -49,10 +49,6 @@ public class PropertyExtractor extends KoreanExtractor {
 		Map<String, String> newProperties = new HashMap<String, String>();
 		
 		String extension = FilenameUtils.getExtension(sourceFile.getAbsolutePath());
-		if (SupportExtension.JAVA.getText().equals(extension)) {
-			isJava = true;
-			isJS = false;
-		}
 		
 		if (SupportExtension.JS.getText().equals(extension)) {
 			isJava = false;
@@ -115,7 +111,7 @@ public class PropertyExtractor extends KoreanExtractor {
     	while (matcher.find()) {
     		String message = matcher.group();
 
-    		boolean containsKorean = message.matches(getContainsKoreanRegex());
+    		boolean containsKorean = message.matches(getKoreanIncludedRegex());
     		if (!containsKorean) {
     			continue;
     		}
@@ -129,14 +125,14 @@ public class PropertyExtractor extends KoreanExtractor {
     	}
     	
     	// "" 또는 >< 사이가 아니지만, 한글이 포함된 라인인 경우
-    	if (convertedLine.equals(line) && line.matches(getContainsKoreanRegex())) {
+    	if (convertedLine.equals(line) && line.matches(getKoreanIncludedRegex())) {
     		isJava = false;
     		
     		if (line.contains("//")) {
         		line = getCommentRemovedString(line);
         	}
     		
-    		if (line.matches(getContainsKoreanRegex())) {
+    		if (line.matches(getKoreanIncludedRegex())) {
     			String value = line.trim();
     			newProperties.putAll(getNewPropertiesInOtherLine(value));
     		}
@@ -281,20 +277,6 @@ public class PropertyExtractor extends KoreanExtractor {
     	}
     	
     	return  key + index;
-    }
-    
-    private static boolean containsJava(String line, String message) {
-    	String regex = "<%(.*?)%>"; // <% %> 사이에 포함
-    	Pattern pattern = Pattern.compile(regex);
-    	Matcher matcher = pattern.matcher(line);
-    	
-    	while (matcher.find()) {
-    		if (matcher.group().contains(message)) {
-    			return true;
-    		}
-    	}
-    	
-    	return false;
     }
     
     private static void writeConvertedFile(File sourceFile, File targetFile) {

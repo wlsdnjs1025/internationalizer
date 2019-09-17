@@ -1,4 +1,4 @@
-package jness.internationalization.extractor;
+package jness.internationalization.executor;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,6 +7,8 @@ import java.io.FileOutputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
+
+import jness.internationalization.model.TargetFile;
 
 public class ProjectCopier {
 
@@ -17,7 +19,7 @@ public class ProjectCopier {
 			
 			if (existFileName.equalsIgnoreCase(projectName)) {
 				MessageDialog.openError(Display.getDefault().getActiveShell(), 
-						"프로퍼티 추출", "내보낼 경로에 선택한 프로젝트와 동일한 이름의 폴더가 존재합니다.");
+						"Internationalization", "내보낼 경로에 선택한 프로젝트와 동일한 이름의 폴더가 존재합니다.");
 				return;
 			}
 		}
@@ -33,11 +35,11 @@ public class ProjectCopier {
 			tempPropertyFile.delete();
 			
 			MessageDialog.openInformation(Display.getCurrent().getActiveShell(), 
-					"프로퍼티 추출", "프로퍼티 파일 추출에 성공하였습니다.");
+					"Internationalization", "완료되었습니다.");
 		}
 		else {
 			MessageDialog.openError(Display.getCurrent().getActiveShell(), 
-					"프로퍼티 추출", "프로퍼티 파일 추출에 실패하였습니다.");
+					"Internationalization", "실패하였습니다.");
 		}
 	}
 	
@@ -74,7 +76,7 @@ public class ProjectCopier {
 	
 	private static boolean copyFile(File sourceFile, File targetFile, File propertyFile) {
 		if (TargetFile.contains(sourceFile)) {
-			return PropertyExtractor.run(sourceFile, targetFile, propertyFile);
+			return InternationalizationExecutor.run(sourceFile, targetFile, propertyFile);
 		}
 		
 		return copyFile(sourceFile, targetFile);

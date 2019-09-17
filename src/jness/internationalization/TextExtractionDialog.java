@@ -23,7 +23,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import jness.internationalization.extractor.TextExtractor;
+import jness.internationalization.executor.KoreanTextExtractor;
+import jness.internationalization.model.SupportExtension;
 
 public class TextExtractionDialog extends Dialog {
 	private Text textArea;
@@ -100,7 +101,7 @@ public class TextExtractionDialog extends Dialog {
 			String extension = FilenameUtils.getExtension(filePath);
 			
 			if (SupportExtension.contains(extension)) {
-				Set<String> allKoreans = TextExtractor.extract(filePath);
+				Set<String> allKoreans = KoreanTextExtractor.extract(filePath);
 	
 				StringBuilder sb = new StringBuilder();
 				for (String line : allKoreans) {

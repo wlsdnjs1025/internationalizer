@@ -16,8 +16,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import jness.internationalization.extractor.ProjectCopier;
-import jness.internationalization.extractor.PropertyExtractor;
+import jness.internationalization.executor.InternationalizationExecutor;
+import jness.internationalization.executor.ProjectCopier;
 
 public class MainView {
 	private Text projectText;
@@ -87,7 +87,7 @@ public class MainView {
 				File targetFile = new File(targetText.getText());
 				File tempPropertyFile = new File(targetText.getText() + File.separator + "messages_ko.properties");
 				
-				PropertyExtractor.init();
+				InternationalizationExecutor.init();
 				
 				ProjectCopier.copy(sourceFile, targetFile, tempPropertyFile);
 			}

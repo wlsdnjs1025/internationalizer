@@ -1,7 +1,7 @@
-package jness.internationalization;
+package jness.internationalization.model;
 
 public enum SupportExtension {
-	JAVA("java", "*.java"),
+	//JAVA("java", "*.java"),
 	JNS("jns", "*.jns"),
 	JS("js", "*.js");
 	//XML("xml", "*.xml");

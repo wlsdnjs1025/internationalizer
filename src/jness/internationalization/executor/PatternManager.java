@@ -1,9 +1,9 @@
-package jness.internationalization.extractor;
+package jness.internationalization.executor;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class KoreanExtractor {
+public class PatternManager {
 	public static boolean isComment = false;
 	
 	public static boolean isComment(String line) {
@@ -32,6 +32,14 @@ public class KoreanExtractor {
 		return line.startsWith("log +=") || line.startsWith("daemon_dm_dspt");
 	}
 	
+	public static boolean remainJavaTag(String line) {
+		String regex = "(.+)%>[ㄱ-ㅎㅏ-ㅣ가-힣]+"; // aaa%>한글
+		Pattern pattern =  Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(line);
+		
+		return matcher.find();
+	}
+
 	/**
 		함수 파라미터에 str이 포함됨
      * @param line
@@ -51,18 +59,32 @@ public class KoreanExtractor {
     	return false;
     }
     
-    public static String getCommentRemovedString(String line) {
-    	String[] array = line.split("//");
-		String comment = array[array.length - 1];
-		return line.replace(comment, "").trim();
+    public static boolean containsJava(String line, String message) {
+    	String regex = "<%(.*?)%>"; // <% %> 사이에 포함
+    	Pattern pattern = Pattern.compile(regex);
+    	Matcher matcher = pattern.matcher(line);
+    	
+    	while (matcher.find()) {
+    		if (matcher.group().contains(message)) {
+    			return true;
+    		}
+    	}
+    	
+    	return false;
     }
     
     public static boolean containsTag(String line) {
-    	String regex = "<([^ㄱ-ㅎㅏ-ㅣ가-힣]+)>"; // <한글 이외의 문자> 인 경우.  ex) '<span>0:0</span>' or '<strong>'
-    	Pattern pattern =  Pattern.compile(regex);
-    	Matcher matcher = pattern.matcher(line);
-    	
-    	return matcher.find();
+		String regex = "<([^ㄱ-ㅎㅏ-ㅣ가-힣]+)>"; // <한글 이외의 문자> 인 경우.  ex) '<span>0:0</span>' or '<strong>'
+		Pattern pattern =  Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(line);
+		
+		return matcher.find();
+	}
+
+	public static String getCommentRemovedString(String line) {
+    	String[] array = line.split("//");
+		String comment = array[array.length - 1];
+		return line.replace(comment, "").trim();
     }
     
     public static String getTagRemovedString(String line) {
@@ -84,14 +106,6 @@ public class KoreanExtractor {
     	}
     	
     	return removedLine;
-    }
-    
-    public static boolean remainJavaTag(String line) {
-    	String regex = "(.+)%>[ㄱ-ㅎㅏ-ㅣ가-힣]+"; // aaa%>한글
-    	Pattern pattern =  Pattern.compile(regex);
-    	Matcher matcher = pattern.matcher(line);
-    	
-    	return matcher.find();
     }
     
     public static String getJavaTagRemovedString(String line) {
@@ -136,7 +150,7 @@ public class KoreanExtractor {
     /**
      * @return 한글 포함 문자열
      */
-    public static String getContainsKoreanRegex() {
+    public static String getKoreanIncludedRegex() {
     	return ".*[ㄱ-ㅎㅏ-ㅣ가-힣]+.*";
     }
 }

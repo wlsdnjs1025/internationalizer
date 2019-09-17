@@ -10,7 +10,8 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 
-import jness.internationalization.extractor.TextExtractor;
+import jness.internationalization.executor.KoreanTextExtractor;
+import jness.internationalization.model.SupportExtension;
 
 public class MenuCreator {
 	private final Shell shell;
@@ -49,7 +50,7 @@ public class MenuCreator {
 					return;
 				}
 
-				Set<String> allKoreans = TextExtractor.extract(path);
+				Set<String> allKoreans = KoreanTextExtractor.extract(path);
 				TextExtractionDialog textArea = new TextExtractionDialog(shell, allKoreans);
 				textArea.open();
 			}

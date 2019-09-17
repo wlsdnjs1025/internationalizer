@@ -1,4 +1,4 @@
-package jness.internationalization.extractor;
+package jness.internationalization.executor;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,8 +12,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class TextExtractor extends KoreanExtractor {
-	private TextExtractor() {}
+public class KoreanTextExtractor extends PatternManager {
+	private KoreanTextExtractor() {}
 
 	public static Set<String> extract(String filePath) {
 		Set<String> allKoreans = new HashSet<String>();
@@ -49,7 +49,7 @@ public class TextExtractor extends KoreanExtractor {
     	
     	while (matcher.find()) {
     		String message = matcher.group();
-    		boolean containsKorean = message.matches(getContainsKoreanRegex());
+    		boolean containsKorean = message.matches(getKoreanIncludedRegex());
     		
     		if (!containsKorean) {
     			continue;
@@ -64,12 +64,12 @@ public class TextExtractor extends KoreanExtractor {
 			result.add(getProperty(value));
     	}
     	
-    	if (result.isEmpty() && line.matches(getContainsKoreanRegex())) {
+    	if (result.isEmpty() && line.matches(getKoreanIncludedRegex())) {
     		if (line.contains("//")) {
         		line = getCommentRemovedString(line);
         	}
     		
-    		if (line.matches(getContainsKoreanRegex())) {
+    		if (line.matches(getKoreanIncludedRegex())) {
     			result.add(getAnotherProperty(line));
     		}
     	}
