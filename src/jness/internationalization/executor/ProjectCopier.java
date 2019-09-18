@@ -30,9 +30,7 @@ public class ProjectCopier {
 		
 		// 하위 모든 폴더 생성
 		if (copyChildren(sourceFile, projectFolder, tempPropertyFile)) {
-			File propertyFile = new File(sourceFile, "htdocs\\WEB-INF\\src\\messages\\messages_ko_KR.properties");
-			ProjectCopier.copyFile(tempPropertyFile, propertyFile);
-			tempPropertyFile.delete();
+			copyPropertyFile(projectFolder, tempPropertyFile);
 			
 			MessageDialog.openInformation(Display.getCurrent().getActiveShell(), 
 					"Internationalization", "작업이 완료되었습니다.");
@@ -72,6 +70,17 @@ public class ProjectCopier {
 		}
 		
 		return true;
+	}
+	
+	private static void copyPropertyFile(File targetFile, File tempPropertyFile) {
+		File messagesFolder = new File(targetFile, "htdocs\\WEB-INF\\src\\messages");
+		if (!messagesFolder.exists()) {
+			messagesFolder.mkdir();
+		}
+		
+		copyFile(tempPropertyFile, new File(messagesFolder, "messages_ko_KR.properties"));
+		
+		tempPropertyFile.delete();
 	}
 	
 	private static boolean copyFile(File sourceFile, File targetFile, File propertyFile) {

@@ -21,7 +21,6 @@ import org.apache.commons.io.FilenameUtils;
 
 import jness.internationalization.model.ConstMsg;
 import jness.internationalization.model.SupportExtension;
-import jness.internationalization.model.TargetFile;
 
 public class InternationalizationExecutor extends PatternManager {
 	private static Map<String, String> allProperty;
@@ -157,20 +156,6 @@ public class InternationalizationExecutor extends PatternManager {
     	}
     	
     	return newProperties;
-    }
-    
-    private static boolean isJSUtilMsg(File sourceFile, String line) {
-    	String sourceFileName = sourceFile.getName();
-    	
-    	if (!sourceFileName.equalsIgnoreCase(TargetFile.JS_UTIL.getPath())) {
-    		return false;
-    	}
-    	
-    	if (!line.trim().startsWith("msg = ")) {
-    		return false;
-    	}
-    	
-    	return true;
     }
     
     /**
