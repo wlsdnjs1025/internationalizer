@@ -19,7 +19,9 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
 
+import jness.internationalization.model.ConstMsg;
 import jness.internationalization.model.SupportExtension;
+import jness.internationalization.model.TargetFile;
 
 public class InternationalizationExecutor extends PatternManager {
 	private static Map<String, String> allProperty;
@@ -42,18 +44,21 @@ public class InternationalizationExecutor extends PatternManager {
 		index = 0;
 	}
 	
-	public static boolean run(File sourceFile, File targetFile, File propertyFile) {
+	private static void initBeforeRun(File sourceFile) {
 		allLines = new ArrayList<String>();
-		String line;
-
-		Map<String, String> newProperties = new HashMap<String, String>();
 		
 		String extension = FilenameUtils.getExtension(sourceFile.getAbsolutePath());
+		boolean isJavaScript = SupportExtension.JS.getText().equals(extension);
 		
-		if (SupportExtension.JS.getText().equals(extension)) {
-			isJava = false;
-			isJS = true;
-		}
+		isJava = !isJavaScript;
+		isJS = isJavaScript;
+	}
+	
+	public static boolean run(File sourceFile, File targetFile, File propertyFile) {
+		Map<String, String> newProperties = new HashMap<String, String>();
+		String line;
+		
+		initBeforeRun(sourceFile);
 		
 		try {
         	BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(sourceFile), "UTF-8"));
@@ -76,7 +81,7 @@ public class InternationalizationExecutor extends PatternManager {
 					}
 				}
 				
-				Map<String, String> koreans = getNewProperties(line);
+				Map<String, String> koreans = getNewProperties(line, sourceFile);
 				newProperties.putAll(koreans);
 				
 				allLines.add(convertedLine);
@@ -102,9 +107,13 @@ public class InternationalizationExecutor extends PatternManager {
 		return true;
 	}
 	
-    private static Map<String, String> getNewProperties(String line) {
-    	Map<String, String> newProperties = new HashMap<String, String>();
-    	
+    private static Map<String, String> getNewProperties(String line, File sourceFile) {
+    	// util.js의 msg인 경우 (메시지에 변수 처리 필요)
+		if (isJSUtilMsg(sourceFile, line)) {
+			return getJSUtilMsgProperty(line.trim());
+		}
+    				
+		Map<String, String> newProperties = new HashMap<String, String>();
     	Pattern pattern = Pattern.compile(getExtractMessageRegex());
     	Matcher matcher = pattern.matcher(line);
     	
@@ -116,7 +125,7 @@ public class InternationalizationExecutor extends PatternManager {
     			continue;
     		}
     		
-    		// isEquals 함수 파라미터에 포함된 경우 제외
+    		// 해당 함수 파라미터에 포함된 경우 제외
 			if (containsFunc(line, "StringUtil.isEquals", message)) {
 				continue;
 			}
@@ -124,7 +133,12 @@ public class InternationalizationExecutor extends PatternManager {
 			newProperties.putAll(getNewPropertiesBetweenChar(line, message));
     	}
     	
-    	// "" 또는 >< 사이가 아니지만, 한글이 포함된 라인인 경우
+    	// Const.java 메시지가 포함된 경우
+    	if (containsConstMsg(convertedLine)) {
+    		convertedLine = getConstMsgConvertedString(convertedLine);
+    	}
+    	
+    	// "" 또는 >< 사이가 아니지만, 한글이 포함된 라인인 경우 (HTML, JS에서 가능함)
     	if (convertedLine.equals(line) && line.matches(getKoreanIncludedRegex())) {
     		isJava = false;
     		
@@ -132,13 +146,138 @@ public class InternationalizationExecutor extends PatternManager {
         		line = getCommentRemovedString(line);
         	}
     		
+    		// 한글 정규식인 경우 
+    		if (containsKoreanRegex(line)) {
+    			return newProperties;
+    		}
+    		
     		if (line.matches(getKoreanIncludedRegex())) {
-    			String value = line.trim();
-    			newProperties.putAll(getNewPropertiesInOtherLine(value));
+    			newProperties.putAll(getNewPropertiesInOtherLine(line.trim()));
     		}
     	}
     	
     	return newProperties;
+    }
+    
+    private static boolean isJSUtilMsg(File sourceFile, String line) {
+    	String sourceFileName = sourceFile.getName();
+    	
+    	if (!sourceFileName.equalsIgnoreCase(TargetFile.JS_UTIL.getPath())) {
+    		return false;
+    	}
+    	
+    	if (!line.trim().startsWith("msg = ")) {
+    		return false;
+    	}
+    	
+    	return true;
+    }
+    
+    /**
+     * @param line
+     * @return 변수처리 된 프로퍼티 맵
+     */
+    private static Map<String, String> getJSUtilMsgProperty(String line) {
+    	Map<String, String> JSUtilMsgProperty = new HashMap<String, String>();
+    	List<String> messages = new ArrayList<>();
+
+    	boolean containsKorean = line.matches(getKoreanIncludedRegex());
+		if (!containsKorean) {
+			return new HashMap<String, String>();
+		}
+    	
+    	Pattern pattern = Pattern.compile("\"(.*?)\"");
+    	Matcher matcher = pattern.matcher(line);
+    	
+    	while (matcher.find()) {
+    		messages.add(matcher.group());
+    	}
+    	
+    	if (messages.isEmpty()) {
+    		return new HashMap<String, String>();
+    	}
+    	
+    	String newMessage = getNewJSUtilMsg(line, messages);
+    	List<String> vars = getJSUtilMsgVars(line, messages);
+    	String existingKey = getExistingKey(newMessage);
+    	
+		if (existingKey.isEmpty()) {
+			String newKey = getNewKey();
+			
+			convertedLine = convertedLine.replace(line.split("msg = ")[1], getFormatMessageFunc(newKey, vars)) + ";";
+			
+			JSUtilMsgProperty.put(newKey, newMessage);
+			allProperty.put(newKey, newMessage);
+
+			index++;
+		}
+		else {
+			convertedLine = convertedLine.replace(line.split("msg = ")[1], getFormatMessageFunc(existingKey, vars)) + ";";
+		}
+			
+    	return JSUtilMsgProperty;
+    }
+    
+    private static String getNewJSUtilMsg(String line, List<String> messages) {
+    	String newMessage = "";
+    	int varNum = 0;
+    	
+    	String removedMsg = line.substring(6).trim(); // 'msg = ' 제거
+    	
+    	if (!removedMsg.startsWith(messages.get(0))) { // 맨 앞에 변수가 있음
+    		newMessage += "{" + varNum + "}";
+    		varNum++;
+    	}
+
+    	for (String message : messages) {
+    		newMessage += message.substring(1, message.length() - 1); // "" 제거
+
+			if (removedMsg.endsWith(message + ";")) {
+				break;
+			}
+
+			newMessage += "{" + varNum + "}";
+			varNum++;
+    	}
+    	
+    	return newMessage;
+    }
+    
+    private static List<String> getJSUtilMsgVars(String line, List<String> messages) {
+    	List<String> vars = new ArrayList<>();
+    	
+    	String removedStr = line.substring(6).trim(); // 'msg = ' 제거
+    	String firstMsg = messages.get(0);
+    	
+    	// 맨 앞에 변수가 있음
+    	if (!removedStr.startsWith(firstMsg)) {
+    		String firstStr = removedStr.split(firstMsg)[0].trim();
+    		String firstVar = firstStr.substring(0, firstStr.length() - 1).trim(); // 뒤에 '+' 제거
+    		
+    		vars.add(firstVar);
+    	}
+    	
+    	// 문자열 사이에 변수가 있음
+    	Pattern pattern =  Pattern.compile(getBetweenPlusRegex());
+		Matcher matcher = pattern.matcher(line);
+		while (matcher.find()) {
+			String var = matcher.group().trim();
+			var = var.substring(2, var.length() - 2).trim(); // 양 옆에 "+ 와 +" 제거
+			vars.add(var);
+		}
+    	
+    	String lastMsg = messages.get(messages.size() - 1);
+    	
+    	// 맨 뒤에 변수가 있음
+    	if (!removedStr.endsWith(lastMsg + ";")) {
+    		String lastStr = removedStr.split(lastMsg)[1].trim();
+    		String lastVar = lastStr.substring(1).trim(); // 앞에 '+' 제거
+    		lastVar = lastVar.substring(0, lastVar.length() - 1).trim(); // 뒤에 ';' 제거
+    		
+    		vars.add(lastVar);
+		}
+    	
+    	return vars;
     }
     
     /**
@@ -260,10 +399,20 @@ public class InternationalizationExecutor extends PatternManager {
     	}
     	
     	if (isJS) {
-    		return "msg.getMessage(\"" + key + "\")";
+    		return "jmbd.getMessage(\"" + key + "\")";
     	}
     	
     	return "<%=mbd.getMessage(\"" + key + "\")%>";
+    }
+    
+    private static String getFormatMessageFunc(String key, List<String> vars) {
+    	String result = "jmbd.getFormatMessage(\"" + key + "\"";
+    	
+    	for (String var : vars) {
+    		result += ", " + var;
+    	}
+    	
+    	return result + ")";
     }
     
     private static String getNewKey() {
@@ -276,7 +425,7 @@ public class InternationalizationExecutor extends PatternManager {
     		}
     	}
     	
-    	return  key + index;
+    	return key + index;
     }
     
     private static void writeConvertedFile(File sourceFile, File targetFile) {
@@ -299,7 +448,7 @@ public class InternationalizationExecutor extends PatternManager {
 		
 		if (!isWrittenInConst) {
 			// Const.java를 프로퍼티로 추출
-			constMap = getSortedMap(getConstProperties());
+			constMap = getSortedMap(ConstMsg.getPropertyMap());
 		}
 		
 		LinkedHashMap<String, String> keyMap = getSortedMap(propertyMap);
@@ -334,20 +483,5 @@ public class InternationalizationExecutor extends PatternManager {
 		return map.entrySet().stream()
 		.sorted(Map.Entry.comparingByKey())
 		.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (ov, nv) -> ov, LinkedHashMap::new));
-	}
-	
-	private static Map<String, String> getConstProperties() {
-		Map<String, String> constMap = new HashMap<String, String>();
-		
-		constMap.put("message_C000", "PC-OFF 시스템");
-		constMap.put("message_C001", "검색된 데이터가 없습니다.");
-		constMap.put("message_C002", "사번");
-		constMap.put("message_C003", "세션이 만료되었습니다.");
-		constMap.put("message_C004", "비정상적으로 접속하셨습니다.");
-		constMap.put("message_C005", "직위");
-		constMap.put("message_C006", "추가된 데이터가 없습니다.");
-		constMap.put("message_C007", "사용 권한이 없습니다.");
-		
-		return constMap;
 	}
 }

@@ -3,6 +3,8 @@ package jness.internationalization.executor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jness.internationalization.model.ConstMsg;
+
 public class PatternManager {
 	public static boolean isComment = false;
 	
@@ -32,15 +34,7 @@ public class PatternManager {
 		return line.startsWith("log +=") || line.startsWith("daemon_dm_dspt");
 	}
 	
-	public static boolean remainJavaTag(String line) {
-		String regex = "(.+)%>[ㄱ-ㅎㅏ-ㅣ가-힣]+"; // aaa%>한글
-		Pattern pattern =  Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(line);
-		
-		return matcher.find();
-	}
-
-	/**
+    /**
 		함수 파라미터에 str이 포함됨
      * @param line
      * @param func
@@ -59,6 +53,11 @@ public class PatternManager {
     	return false;
     }
     
+    /**
+     * @param line
+     * @param message
+     * @return '<% %>' 사이에 포함된 문자가 있는지 검사
+     */
     public static boolean containsJava(String line, String message) {
     	String regex = "<%(.*?)%>"; // <% %> 사이에 포함
     	Pattern pattern = Pattern.compile(regex);
@@ -73,8 +72,43 @@ public class PatternManager {
     	return false;
     }
     
+    /**
+     * @param line
+     * @return 태그가 포함된 문자열인지 검사
+     */
     public static boolean containsTag(String line) {
 		String regex = "<([^ㄱ-ㅎㅏ-ㅣ가-힣]+)>"; // <한글 이외의 문자> 인 경우.  ex) '<span>0:0</span>' or '<strong>'
+		Pattern pattern =  Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(line);
+		
+		return matcher.find();
+	}
+
+	/**
+	 * @return 한글 정규식이 포함된 라인인지 검사
+	 */
+	public static boolean containsKoreanRegex(String line) {
+		String regex = "\\[.*ㄱ.*힣.*\\]";
+		
+		Pattern pattern =  Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(line);
+		
+		return matcher.find();
+	}
+	
+    /**
+     * @return 'Const.DEFAULT_'가 포함된 라인인지 검사
+     */
+    public static boolean containsConstMsg(String line) {
+    	return line.contains("Const.DEFAULT_");
+    }
+	
+    /**
+     * @param line
+     * @return 문자열에 '<%' 또는 '%>' 태그가 남았는지 검사
+     */
+	public static boolean remainJavaTag(String line) {
+		String regex = "(.+)%>[ㄱ-ㅎㅏ-ㅣ가-힣]+"; // aaa%>한글
 		Pattern pattern =  Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(line);
 		
@@ -106,6 +140,25 @@ public class PatternManager {
     	}
     	
     	return removedLine;
+    }
+    
+    public static String getConstMsgConvertedString(String line) {
+    	String convertedLine = line;
+    	
+    	String regex = "Const.DEFAULT_";
+    	Pattern pattern =  Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(line);
+		
+		while (matcher.find()) {
+			String constVar = ConstMsg.get(convertedLine);
+			
+			if (!constVar.isEmpty()) {
+				String var = "Const." + constVar;
+				convertedLine = convertedLine.replace(var, "mbd.getWord(" + var + ")");
+			}
+		}
+		
+		return convertedLine;
     }
     
     public static String getJavaTagRemovedString(String line) {
@@ -141,16 +194,23 @@ public class PatternManager {
     }
     
     /**
-     * @return "" 또는 >< 사이에 포함되는 문자열
+     * @return "" 또는 >< 사이에 포함
      */
     public static String getExtractMessageRegex() {
     	return "\"(.*?)\"|>(.*?)<";
     }
     
     /**
-     * @return 한글 포함 문자열
+     * @return 한글 포함
      */
     public static String getKoreanIncludedRegex() {
     	return ".*[ㄱ-ㅎㅏ-ㅣ가-힣]+.*";
+    }
+    
+    /**
+     * @return "+ 와 +" 사이
+     */
+    public static String getBetweenPlusRegex() {
+    	return "\"\\+(.*?)\\+\"";
     }
 }

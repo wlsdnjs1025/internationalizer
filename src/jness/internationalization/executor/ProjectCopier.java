@@ -35,11 +35,11 @@ public class ProjectCopier {
 			tempPropertyFile.delete();
 			
 			MessageDialog.openInformation(Display.getCurrent().getActiveShell(), 
-					"Internationalization", "완료되었습니다.");
+					"Internationalization", "작업이 완료되었습니다.");
 		}
 		else {
 			MessageDialog.openError(Display.getCurrent().getActiveShell(), 
-					"Internationalization", "실패하였습니다.");
+					"Internationalization", "작업에 실패하였습니다.");
 		}
 	}
 	

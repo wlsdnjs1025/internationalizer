@@ -5,26 +5,39 @@ import java.io.File;
 import org.apache.commons.io.FilenameUtils;
 
 public enum TargetFile {
-	WEB_SERVICE("/WebService/"),
-	JS_UTIL("/jworks/commom/js/");
+	IN_WEB_SERVICE("\\WebService\\", true),
+	JS_UTIL("util.js", false),
+	JS_BIZ("biz.js", false);
 	
-	private final String parentPath;
+	private final String path;
+	private final boolean isParent;
 	
-	private TargetFile(String parentPath) {
-		this.parentPath = parentPath;
+	private TargetFile(String path, boolean isParent) {
+		this.path = path;
+		this.isParent = isParent;
 	}
 	
-	private String getParentPath() {
-		return parentPath;
+	public String getPath() {
+		return path;
 	}
 	
 	public static boolean contains(File file) {
-		String filePath = file.getAbsolutePath();
 		String extension = FilenameUtils.getExtension(file.getName());
 		
+		if (!SupportExtension.contains(extension)) {
+			return false;
+		}
+		
 		for (TargetFile targetFile : values()) {
-			if (filePath.contains(targetFile.getParentPath()) && SupportExtension.contains(extension)) {
-				return true;
+			if (targetFile.isParent) {
+				if (file.getAbsolutePath().contains(targetFile.path)) {
+					return true;
+				}
+			}
+			else {
+				if (file.getName().equalsIgnoreCase(targetFile.path)) {
+					return true;
+				}
 			}
 		}
 		
