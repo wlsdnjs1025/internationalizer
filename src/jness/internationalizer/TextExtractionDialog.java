@@ -1,4 +1,4 @@
-package jness.internationalization;
+package jness.internationalizer;
 
 import java.util.Set;
 
@@ -23,8 +23,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import jness.internationalization.executor.KoreanTextExtractor;
-import jness.internationalization.model.SupportExtension;
+import jness.internationalizer.executor.KoreanTextExtractor;
+import jness.internationalizer.model.SupportExtension;
 
 public class TextExtractionDialog extends Dialog {
 	private Text textArea;

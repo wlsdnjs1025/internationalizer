@@ -1,11 +1,11 @@
-package jness.internationalization.executor;
+package jness.internationalizer.executor;
 
 import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jness.internationalization.model.ConstMsg;
-import jness.internationalization.model.TargetFile;
+import jness.internationalizer.model.ConstMsg;
+import jness.internationalizer.model.TargetFile;
 
 public class PatternManager {
 	public static boolean isComment = false;
@@ -34,6 +34,20 @@ public class PatternManager {
 	
 	public static boolean isLog(String line) {
 		return line.startsWith("log +=") || line.startsWith("daemon_dm_dspt");
+	}
+	
+	public static boolean isDicKoreanChar(File sourceFile, String line) {
+		String sourceFileName = sourceFile.getName();
+    	
+    	if (!sourceFileName.equalsIgnoreCase("Dic.jns")) {
+    		return false;
+    	}
+    	
+    	if (!line.startsWith("<a href=")) {
+    		return false;
+    	}
+    	
+    	return true;
 	}
 	
 	public static boolean isJSUtilMsg(File sourceFile, String line) {

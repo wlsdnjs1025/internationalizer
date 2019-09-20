@@ -1,4 +1,4 @@
-package jness.internationalization;
+package jness.internationalizer;
 
 import java.util.Set;
 
@@ -10,8 +10,8 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 
-import jness.internationalization.executor.KoreanTextExtractor;
-import jness.internationalization.model.SupportExtension;
+import jness.internationalizer.executor.KoreanTextExtractor;
+import jness.internationalizer.model.SupportExtension;
 
 public class MenuCreator {
 	private final Shell shell;

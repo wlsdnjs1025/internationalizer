@@ -1,4 +1,4 @@
-package jness.internationalization.executor;
+package jness.internationalizer.executor;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -8,7 +8,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 
-import jness.internationalization.model.TargetFile;
+import jness.internationalizer.model.TargetFile;
 
 public class ProjectCopier {
 

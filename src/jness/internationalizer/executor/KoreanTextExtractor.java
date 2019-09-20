@@ -1,4 +1,4 @@
-package jness.internationalization.executor;
+package jness.internationalizer.executor;
 
 import java.io.BufferedReader;
 import java.io.File;

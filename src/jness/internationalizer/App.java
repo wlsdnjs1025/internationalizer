@@ -1,32 +1,36 @@
-package jness.internationalization;
+package jness.internationalizer;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 
 public class App {
 	public static void main(String[] args) {
 		Display display = new Display();
 		Shell shell = new Shell(display);
 		
-		shell.setText("Internationalization");
+		shell.setText("Internationalizer");
 //		shell.setImage(new Image(Display.getDefault(), App.class.getClassLoader().getResource("icon.png").getPath()));
 		shell.setLayout(new FillLayout());
-		shell.setBounds(100, 100, 400, 190);
+		shell.setBounds(100, 100, 400, 220);
 		
-		new MenuCreator(shell);
+		//new MenuCreator(shell);
 		
-		Composite composite = new Composite(shell, SWT.NONE);
-		composite.setLayout(new GridLayout());
-		composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		
-		new MainView(composite);
+		TabFolder tabFolder = new TabFolder(shell, SWT.BORDER);
+
+	    TabItem projectTab = new TabItem(tabFolder, SWT.BORDER);
+	    projectTab.setText("Internationalization");
+	    projectTab.setControl(new ProjectView(tabFolder));
+	    
+	    TabItem translationTab = new TabItem(tabFolder, SWT.BORDER);
+	    translationTab.setText("프로퍼티 번역");
+	    translationTab.setControl(new TranslationView(tabFolder));
 		
 		shell.open();
+		
 		while (!shell.isDisposed()) {
 		    if(!display.readAndDispatch()) {
 		        display.sleep();

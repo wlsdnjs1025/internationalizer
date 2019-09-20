@@ -1,4 +1,4 @@
-package jness.internationalization.model;
+package jness.internationalizer.model;
 
 import java.util.HashMap;
 import java.util.Map;

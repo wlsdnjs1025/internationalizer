@@ -1,4 +1,4 @@
-package jness.internationalization.event;
+package jness.internationalizer.event;
 
 import java.util.ArrayList;
 import java.util.HashMap;

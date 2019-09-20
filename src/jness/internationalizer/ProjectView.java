@@ -1,4 +1,4 @@
-package jness.internationalization;
+package jness.internationalizer;
 
 import java.io.File;
 
@@ -7,6 +7,7 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -16,23 +17,31 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import jness.internationalization.executor.InternationalizationExecutor;
-import jness.internationalization.executor.ProjectCopier;
+import jness.internationalizer.executor.InternationalizationExecutor;
+import jness.internationalizer.executor.ProjectCopier;
 
-public class MainView {
+public class ProjectView extends Composite {
 	private Text projectText;
 	private Text targetText;
 	private Button okButton;
 
-	public MainView(Composite parent) {
-		Composite composite = new Composite(parent, SWT.NONE);
+	public ProjectView(Composite tabFolder) {
+		super(tabFolder, SWT.NO_BACKGROUND);
+		this.setLayout(new FillLayout());
+
+		Composite mainComposite = new Composite(this, SWT.NONE);
+		mainComposite.setLayout(new GridLayout());
+		mainComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		
+		Composite composite = new Composite(mainComposite, SWT.NONE);
 		composite.setLayout(new GridLayout(3, false));
 		composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		composite.setFocus();
 		
 		projectText = createBrowseComposite(composite, "프로젝트");
 		targetText = createBrowseComposite(composite, "내보낼 경로");
-		createOkButtonComposite(parent);
+		
+		createOkButtonComposite(mainComposite);
 	}
 
 	private Text createBrowseComposite(Composite parent, String title) {
@@ -77,8 +86,8 @@ public class MainView {
 		composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
 		okButton = new Button(composite, SWT.PUSH);
-		okButton.setText("Internationalization");
 		okButton.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false));
+		okButton.setText("실행하기");
 		okButton.setEnabled(false);
 		okButton.addSelectionListener(new SelectionAdapter() {
 			@Override

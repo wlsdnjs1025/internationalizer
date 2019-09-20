@@ -1,4 +1,4 @@
-package jness.internationalization.executor;
+package jness.internationalizer.executor;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
 
-import jness.internationalization.model.ConstMsg;
-import jness.internationalization.model.SupportExtension;
+import jness.internationalizer.model.ConstMsg;
+import jness.internationalizer.model.SupportExtension;
 
 public class InternationalizationExecutor extends PatternManager {
 	private static Map<String, String> allProperty;
@@ -65,7 +65,7 @@ public class InternationalizationExecutor extends PatternManager {
 				convertedLine = line;
 				String trimLine = line.trim();
 				
-				if (isComment(trimLine) || isQuery(trimLine) || isLog(trimLine)) {
+				if (isComment(trimLine) || isQuery(trimLine) || isLog(trimLine) || isDicKoreanChar(sourceFile, trimLine)) {
 					allLines.add(convertedLine);
 					continue;
 				}

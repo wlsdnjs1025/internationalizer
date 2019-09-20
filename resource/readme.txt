@@ -9,7 +9,6 @@
 
 3. 메서드 추가
  - ScriptUtil.java initMessageScript(String lang)
- - biz.js 	
 	
 4. DB
  - jovt_member 테이블에 lang 컬럼 추가
@@ -18,6 +17,7 @@
 5. locale 초기화 코드 추가
  - incDefaultHeader.jns
  - Lobby.jns 
+ - Gate.jns
  - Admin.jns
  - OT_Edit.jns
  
@@ -25,10 +25,9 @@
  
  ------------------------------------------------------------------
  
- * 기타 수작업 필요
- 1. OT_Command.jns '최대 1분' 포함된 부분
- 	ReAuth_UI.js '운영자에게 결재를 요청합니다.' 포함된 부분
+ * 한계 (수작업 필요)
  
- 	 홑따옴표대신 쌍따옴표를 HTML 태그 안에서 써서 문제가 됨
- 	-> 홑따옴표로 바꿔서 Internationalization 실행 or 메시지 프로퍼티 직접 수정
- 	
+ 1. HTML 태그 안에서 홑따옴표대신 쌍따옴표를 써서 문제가 되는 부분 (4군데)
+ 	-> 메시지 프로퍼티 직접 수정
+ 
+ 2. DB에서 가져오는 한글은 getWord 함수로 변환해줘야 함
