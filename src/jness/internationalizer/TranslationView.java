@@ -2,6 +2,7 @@ package jness.internationalizer;
 
 import java.io.File;
 
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -23,6 +24,7 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import jness.internationalizer.executor.PropertyTranslator;
 import jness.internationalizer.model.Language;
 
 public class TranslationView extends Composite {
@@ -161,9 +163,19 @@ public class TranslationView extends Composite {
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
 				IStructuredSelection selection = (IStructuredSelection) combo.getSelection();
-				File sourceFile = new File(koPropertyText.getText());
+				File koProperty = new File(koPropertyText.getText());
+				File exportPath = new File(targetText.getText());
 				Language lang = (Language) selection.getFirstElement();
-				File targetFile = new File(targetText.getText());
+				
+				boolean result = PropertyTranslator.run(koProperty, exportPath, lang);
+				if (result) {
+					MessageDialog.openInformation(Display.getCurrent().getActiveShell(), 
+							"프로퍼티 번역", "작업이 완료되었습니다.");
+				}
+				else {
+					MessageDialog.openInformation(Display.getCurrent().getActiveShell(), 
+							"프로퍼티 번역", "작업에 실패하였습니다.");
+				}
 			}
 		});
 	}

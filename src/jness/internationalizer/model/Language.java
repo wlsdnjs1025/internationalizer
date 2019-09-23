@@ -15,4 +15,8 @@ public enum Language {
 	public String getText() {
 		return text;
 	}
+	
+	public String getFileName() {
+		return fileName;
+	}
 }
