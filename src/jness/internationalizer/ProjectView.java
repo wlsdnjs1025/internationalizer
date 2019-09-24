@@ -92,12 +92,13 @@ public class ProjectView extends Composite {
 		okButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
+				File projectPropertyFile = new File(projectText.getText(), "htdocs\\WEB-INF\\src\\messages\\messages_ko_KR.properties");
+				File tempPropertyFile = new File(targetText.getText() + File.separator + "messages_ko_KR.properties");
+
 				File sourceFile = new File(projectText.getText());
 				File targetFile = new File(targetText.getText());
-				File tempPropertyFile = new File(targetText.getText() + File.separator + "messages_ko.properties");
 				
-				InternationalizationExecutor.init();
-				
+				InternationalizationExecutor.init(projectPropertyFile, tempPropertyFile);
 				ProjectCopier.copy(sourceFile, targetFile, tempPropertyFile);
 			}
 		});

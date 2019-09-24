@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -34,13 +35,31 @@ public class InternationalizationExecutor extends PatternManager {
 	
 	private InternationalizationExecutor() {}
 	
-	public static void init() {
+	public static void init(File projectPropertyFile, File tempPropertyFile) {
 		// 'Internationalization' 버튼 선택 시 초기화
-		allProperty = new HashMap<String, String>();
+		allProperty = getInitPropertyMap(projectPropertyFile, tempPropertyFile);
 		isJava = false;
 		isJS = false;
-		isWrittenInConst = false;
-		index = 0;
+		isWrittenInConst = !allProperty.isEmpty();
+		index = getKeyIndex(projectPropertyFile);
+	}
+	
+	private static Map<String, String> getInitPropertyMap(File projectPropertyFile, File tempPropertyFile) {
+		Map<String, String> initPropertyMap = new HashMap<String, String>();
+		
+		if (projectPropertyFile.exists()) {
+			Properties property = PropertyTranslator.loadProperty(projectPropertyFile.getAbsolutePath());
+			
+			for (Object keyObj : property.keySet()) {
+				String key = (String) keyObj;
+
+				initPropertyMap.put(key, property.getProperty(key));
+			}
+			
+			ProjectCopier.copyFile(projectPropertyFile, tempPropertyFile);
+		}
+		
+		return initPropertyMap;
 	}
 	
 	private static void initBeforeRun(File sourceFile) {
@@ -145,8 +164,8 @@ public class InternationalizationExecutor extends PatternManager {
         		line = getCommentRemovedString(line);
         	}
     		
-    		// 한글 정규식인 경우 
-    		if (containsKoreanRegex(line)) {
+    		// 한글 정규식 또는 함수 파라미터에 한글이 있는 경우
+    		if (containsKoreanRegex(line) || line.contains("StringUtil.isEquals")) {
     			return newProperties;
     		}
     		
@@ -368,9 +387,8 @@ public class InternationalizationExecutor extends PatternManager {
     
     private static String getExistingKey(String message) {
     	for (String existingKey : allProperty.keySet()) {
-			String value = allProperty.get(existingKey);
-			
-			if (value.equalsIgnoreCase(message)) {
+			String value = allProperty.get(existingKey).trim();
+			if (value.equalsIgnoreCase(message.trim())) {
 				return existingKey;
 			}
 		}
@@ -413,7 +431,33 @@ public class InternationalizationExecutor extends PatternManager {
     	return key + index;
     }
     
-    private static void writeConvertedFile(File sourceFile, File targetFile) {
+    private static int getKeyIndex(File propertyFile) {
+    	if (!propertyFile.exists()) {
+    		return 0;
+    	}
+    	
+		Properties property = PropertyTranslator.loadProperty(propertyFile.getAbsolutePath());
+		
+		int lastIndex = 0;
+		for (Object keyObj : property.keySet()) {
+			String key = (String) keyObj;
+			key = key.split("message_")[1];
+			
+			if (key.startsWith("C")) {
+				continue;
+			}
+			
+			int index = Integer.parseInt(key);
+			
+			if (lastIndex < index) {
+				lastIndex = index;
+			}
+		}
+		
+		return lastIndex + 1;
+	}
+
+	private static void writeConvertedFile(File sourceFile, File targetFile) {
     	try {
 			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(targetFile), "UTF-8"));
 			
@@ -428,7 +472,7 @@ public class InternationalizationExecutor extends PatternManager {
 		}
     }
     
-	private static void writePropertyFile(File propertyFile, Map<String, String> propertyMap) {
+    private static void writePropertyFile(File propertyFile, Map<String, String> propertyMap) {
 		LinkedHashMap<String, String> constMap = new LinkedHashMap<String, String>();
 		
 		if (!isWrittenInConst) {

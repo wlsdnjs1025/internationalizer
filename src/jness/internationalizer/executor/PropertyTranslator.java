@@ -29,7 +29,7 @@ public class PropertyTranslator {
 		return writePropertyFile(exportPath, lang, translatedProperty);
 	}
 	
-	private static Properties loadProperty(String filePath) {
+	public static Properties loadProperty(String filePath) {
 		Properties properties = new Properties();
 		
 		try {

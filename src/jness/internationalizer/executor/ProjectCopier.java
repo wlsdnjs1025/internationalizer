@@ -91,7 +91,7 @@ public class ProjectCopier {
 		return copyFile(sourceFile, targetFile);
 	}
 	
-	private static boolean copyFile(File sourceFile, File targetFile) {
+	public static boolean copyFile(File sourceFile, File targetFile) {
 		FileInputStream fis = null;
 		FileOutputStream fos = null;
 		
