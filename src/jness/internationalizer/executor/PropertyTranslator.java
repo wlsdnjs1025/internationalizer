@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.Properties;
@@ -20,13 +21,30 @@ public class PropertyTranslator {
 	private PropertyTranslator() {}
 	
 	public static boolean run(File koPropertyFile, File exportPath, Language lang) {
-		String koDictionaryPath = App.class.getClassLoader().getResource("resources/messages_ko_KR.properties").getPath();
-		koDictionary = loadProperty(koDictionaryPath);
+		InputStream koDictionaryInputStream = App.class.getClassLoader().getResourceAsStream("resources/messages_ko_KR.properties");
+		koDictionary = loadProperty(koDictionaryInputStream);
 		
 		Properties koProperty = loadProperty(koPropertyFile.getAbsolutePath());
+		
 		Properties translatedProperty = getTranslatedProperty(koProperty, lang);
 		
 		return writePropertyFile(exportPath, lang, translatedProperty);
+	}
+	
+	public static Properties loadProperty(InputStream inputStream) {
+		Properties properties = new Properties();
+		
+		try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+			properties.load(br);
+			
+			inputStream.close();
+			br.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return properties;
 	}
 	
 	public static Properties loadProperty(String filePath) {
@@ -47,8 +65,8 @@ public class PropertyTranslator {
 	private static Properties getTranslatedProperty(Properties koProperty, Language lang) {
 		SortedProperties properties = new SortedProperties();
 		
-		String distionaryPath = App.class.getClassLoader().getResource("resources/" + lang.getFileName()).getPath();
-		Properties dictionary = loadProperty(distionaryPath);
+		InputStream distionaryInputStream = App.class.getClassLoader().getResourceAsStream("resources/" + lang.getFileName());
+		Properties dictionary = loadProperty(distionaryInputStream);
 		
 		for (Object keyObj : koProperty.keySet()) {
 			String key = (String) keyObj;
